@@ -6,7 +6,7 @@ Basic watch firmware for the `cyberpunk_netwatch`, see original repo for [schema
 
 The top botton will toggle the display on and off, the display will also timeout after a few seconds (this can be set with SHOW_TIME definition).
 
-Holding the bottom button and pressing or holding the top button will set the time. Holding the top button for a couple of seconds will start it increasing by 10-minute increments.
+Holding the bottom button and pressing or holding the top button will set the time. Digits will flash to let you know you're in time setting mode. Holding the top button for a couple of seconds will start it increasing by 10-minute increments.
 
 ## Power optimizations
 
