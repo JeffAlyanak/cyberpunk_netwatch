@@ -26,13 +26,9 @@ void loop()
 	if(show_the_time == true)
 	{
 		if(set_the_time == true) setTime();
-
-		//Debounce
-		while(digitalRead(TOP_BUTTON_PIN) == LOW) ; //Wait for you to remove your finger
-		delay(100);
-		while(digitalRead(TOP_BUTTON_PIN) == LOW) ; //Wait for you to remove your finger
+		while(digitalRead(TOP_BUTTON_PIN) == LOW);
 		digitalWrite(LED_PIN, HIGH);
-		showTime(); //Show the current time for a few seconds
+		showTime();
 		digitalWrite(LED_PIN, LOW);
 
 		show_the_time = false;
