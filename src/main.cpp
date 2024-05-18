@@ -1,7 +1,8 @@
 #include "main.h"
 
 int show_the_time = false;
-int set_the_time = false;
+int set_the_clock = false;
+int set_the_timer = false;
 
 long seconds = 1;
 int minutes = 0;
@@ -23,9 +24,14 @@ void loop()
 {
 	sleep_mode(); //wake on INT0 (button press) or TIMER2 (8 seconds)
 
+	if(set_the_timer)
+	{
+		setTimer();
+	}
+
 	if(show_the_time == true)
 	{
-		if(set_the_time == true) setTime();
+		if(set_the_clock == true) setClock();
 		while(digitalRead(TOP_BUTTON_PIN) == LOW);
 		digitalWrite(LED_PIN, HIGH);
 		showTime();
@@ -109,25 +115,18 @@ SIGNAL(TIMER2_OVF_vect)
 // Top button interrupt
 SIGNAL(INT0_vect)
 {
-	if (digitalRead(TOP_BUTTON_PIN) == LOW)
-	{
-		show_the_time = true;
-	}
-	else
-	{
-		show_the_time = false;
-	}
+	show_the_time = true;
 }
 // Bottom button interrupt
 ISR(PCINT1_vect) 
 {
 	if (digitalRead(BOTTOM_BUTTON_PIN) == LOW)
 	{
-		set_the_time = true;
+		set_the_clock = true;
 	}
 	else
 	{
-		set_the_time = false;
+		set_the_clock = false;
 	}
 }
 
@@ -155,6 +154,8 @@ void showTime()
 	boolean buttonPreviouslyHit = false;
 	
 	unsigned long startTime = millis();
+	unsigned long doubleTap = millis();
+
 	while( (millis() - startTime) < SHOW_TIME)
 	{
 		displayNum(combineTime(hours, minutes));
@@ -165,19 +166,33 @@ void showTime()
 		}
 		else if( (buttonPreviouslyHit == true) && (digitalRead(TOP_BUTTON_PIN) == HIGH) )
 		{
-			return;
+			if (elapsedTime(doubleTap) < DOUBLE_TAP_TIMEOUT) setTimer();
+			else return;
 		}
+		
 	}
 }
 
-void setTime()
+void setTimer()
+{
+	unsigned long duration    = millis();
+
+	while(elapsedTime(duration) < 200)
+	{
+		showString(const_cast<char *>("TIMR"));
+	}
+
+	set_the_timer = false;
+}
+
+void setClock()
 {
 	unsigned long buttonHoldDuration    = millis();
 	unsigned long flashDuration    	    = buttonHoldDuration;
 	unsigned long buttonTimeout         = BUTTON_TIMEOUT;
 
 	// will continue as long as bottom button is held
-	while(set_the_time)
+	while(set_the_clock)
 	{
 		// flash digits and LED while in set time mode
 		if (elapsedTime(flashDuration) < SET_TIME_FLASH_SPEED)
@@ -233,4 +248,3 @@ void showString(char *str)
 		displayLetters(str);
 	}
 }
-

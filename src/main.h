@@ -12,6 +12,7 @@
 #define SHOW_STRING 80
 
 #define BUTTON_TIMEOUT 20
+#define DOUBLE_TAP_TIMEOUT 100
 #define SET_TIME_FAST_ADVANCE 500
 
 #define SET_TIME_FLASH_SPEED 60
@@ -30,7 +31,8 @@ void updateTime();
 int combineTime(int hours, int minutes);
 unsigned long elapsedTime(unsigned int time);
 void showTime();
-void setTime();
+void setClock();
+void setTimer();
 
 void showString(char *str);
 
