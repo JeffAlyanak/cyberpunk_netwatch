@@ -8,6 +8,8 @@ long seconds = 1;
 int minutes = 0;
 int hours = 12;
 
+unsigned int timer_seconds = 0;
+
 void setup()
 {
 	powerOptimizations();
@@ -23,11 +25,6 @@ void setup()
 void loop()
 {
 	sleep_mode(); //wake on INT0 (button press) or TIMER2 (8 seconds)
-
-	if(set_the_timer)
-	{
-		setTimer();
-	}
 
 	if(show_the_time == true)
 	{
@@ -110,6 +107,16 @@ SIGNAL(TIMER2_OVF_vect)
 {
 	seconds += 8;
 	updateTime();
+
+	if (timer_seconds > 0)
+	{
+		timer_seconds -= 8;
+		if (timer_seconds == 0)
+		{
+			timerFlash();
+		}
+	}
+	
 }
 
 // Top button interrupt
@@ -123,6 +130,7 @@ ISR(PCINT1_vect)
 	if (digitalRead(BOTTOM_BUTTON_PIN) == LOW)
 	{
 		set_the_clock = true;
+		set_the_timer = false;
 	}
 	else
 	{
@@ -169,12 +177,13 @@ void showTime()
 			if (elapsedTime(doubleTap) < DOUBLE_TAP_TIMEOUT) setTimer();
 			else return;
 		}
-		
 	}
 }
 
 void setTimer()
 {
+	set_the_timer = true;
+
 	unsigned long duration    = millis();
 
 	while(elapsedTime(duration) < 200)
@@ -182,7 +191,59 @@ void setTimer()
 		showString(const_cast<char *>("TIMR"));
 	}
 
-	set_the_timer = false;
+	unsigned long flashDuration    	    = millis();
+	unsigned long buttonTimeout         = BUTTON_TIMEOUT;
+
+	// Will continue until bottom button is pressed.
+	while(set_the_timer)
+	{
+		// flash digits and LED while in set time mode
+		if (elapsedTime(flashDuration) < SET_TIME_FLASH_SPEED)
+		{
+			displayNum(timer_seconds);
+			digitalWrite(LED_PIN, HIGH);
+		}
+		else if (elapsedTime(flashDuration) < (SET_TIME_FLASH_SPEED + SET_TIME_FLASH_SPEED/3 ))
+		{
+			displayLetters(const_cast<char *>("    "));
+			digitalWrite(LED_PIN, LOW);
+		} else {
+			flashDuration = millis();
+		}
+
+		if(digitalRead(TOP_BUTTON_PIN) == LOW)
+		{
+			// BUTTON_TIMEOUT determines how fast another input is registered when holding button down
+			if (elapsedTime(buttonTimeout) > BUTTON_TIMEOUT)
+			{
+				timer_seconds += 8;
+			}
+			buttonTimeout = millis();
+		}
+	}
+}
+
+void timerFlash()
+{
+	unsigned long flashDuration    	    = millis();
+
+	// Will continue until bottom button is pressed.
+	while (digitalRead(TOP_BUTTON_PIN) == HIGH)
+	{
+		// flash digits and LED while in set time mode
+		if (elapsedTime(flashDuration) < SET_TIME_FLASH_SPEED)
+		{
+			displayNum(0);
+			digitalWrite(LED_PIN, HIGH);
+		}
+		else if (elapsedTime(flashDuration) < (SET_TIME_FLASH_SPEED + SET_TIME_FLASH_SPEED/3 ))
+		{
+			displayLetters(const_cast<char *>("    "));
+			digitalWrite(LED_PIN, LOW);
+		} else {
+			flashDuration = millis();
+		}
+	}
 }
 
 void setClock()

@@ -33,6 +33,7 @@ unsigned long elapsedTime(unsigned int time);
 void showTime();
 void setClock();
 void setTimer();
+void timerFlash();
 
 void showString(char *str);
 
